@@ -2,7 +2,9 @@
  using System.Collections;
  using System.Collections.Generic;
  using System.IO;
+ using System.IO.Enumeration;
  using System.Runtime.InteropServices;
+ using Unity.VisualScripting;
  using UnityEditor;
  using UnityEngine;
  using UnityEngine.Rendering;
@@ -14,8 +16,10 @@
      private ComputeShader voxelizer;
      public MeshFilter selectedMesh;
      public GameObject obj;
-     private string savePath;
-     private string loadPath;
+     private string voxelizePath="Meshes";//只能voxelize Resources下的目录
+     private string savePath="Assets/Resources/VoxelInfo/";
+     private string voxelizeSavePath="Assets/Resources/VoxelInfo/";
+     private string loadPath="Assets/Resources/VoxelInfo/";
      private Texture2D texture;
  
      [MenuItem("Tools/Voxelizer")]
@@ -28,16 +32,21 @@
          GUILayout.Label("Mesh Generator", EditorStyles.boldLabel);
          obj = EditorGUILayout.ObjectField("GameObject", obj, typeof(GameObject), true) as GameObject;
          selectedMesh = EditorGUILayout.ObjectField("Mesh Filter", selectedMesh, typeof(MeshFilter), true) as MeshFilter;
-         savePath = EditorGUILayout.TextField("Save Path", savePath);
-         texture = EditorGUILayout.ObjectField("Select Texture", texture, typeof(Texture2D), false) as Texture2D;
- 
-         if (GUILayout.Button("Save"))
+         voxelizePath = EditorGUILayout.TextField("Voxelize Path", voxelizePath);
+         voxelizeSavePath = EditorGUILayout.TextField("Voxelize Save Path", voxelizeSavePath);
+         if (GUILayout.Button("Voxelize"))
          {
-             generateVoxel();
+             generateVoxels_Path();
          }
+         loadPath = EditorGUILayout.TextField("Load Path", loadPath);
          if (GUILayout.Button("Load"))
          {
              loadPathVoxels();
+         }
+         savePath = EditorGUILayout.TextField("Save Path", savePath);
+         if (GUILayout.Button("Save this mesh"))
+         {
+             saveThisMesh();
          }
      }
  
@@ -82,6 +91,7 @@
          
          var voxelBuffer = new ComputeBuffer(w * h * d, Marshal.SizeOf(typeof(Voxel)));
          var voxels = new Voxel[voxelBuffer.count];
+         Debug.Log(w+" "+h+" "+d);
          voxelBuffer.SetData(voxels); // initialize voxels explicitly
          
          voxelizer.SetVector("_Start",start);
@@ -104,21 +114,42 @@
          voxelizer.SetBuffer(kernelID,"_TriBuffer",triBuffer);
          voxelizer.SetBuffer(kernelID, "_UVBuffer",uvBuffer);
          voxelizer.SetBuffer(kernelID,"_VoxelBuffer",voxelBuffer);
-         voxelizer.Dispatch(kernelID,triangleIndexes/64,1,1);
+         voxelizer.Dispatch(kernelID,triangleIndexes/64+1,1,1);
          
          voxelBuffer.GetData(voxels);
+         
+         vertBuffer.Release();
+         uvBuffer.Release();
+         triBuffer.Release();
          voxelBuffer.Release();
          return new VoxelData(voxels, w, h, d, unit);
      }
-
-     void loadVoxel(string path)
+     void saveThisMesh()
+     {
+         voxelizer=Resources.Load("Shaders/VoxelizeCS") as ComputeShader;
+         selectedMesh = obj.GetComponent<MeshFilter>();
+         Mesh mesh = selectedMesh.sharedMesh;
+         VoxelData voxelData = Voxelize(
+             voxelizer, // ComputeShader (Voxelizer.compute)
+             mesh, // a target mesh
+             32, // # of voxels for largest AABB bounds
+             false // flag to fill in volume or not; if set flag to false, sample a surface only
+         );
+         bool useUV = false;
+         
+         Debug.Log(savePath);
+         VoxelUtils.saveVoxelInfo(savePath+obj.name,voxelData);
+     }
+     void loadVoxel(string path,int num)
      {
          VoxelData voxelData=VoxelUtils.loadVoxelInfo(path);
          GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
          // 设置立方体的位置
-         cube.transform.position = new Vector3(0, 0, 0);
+         cube.transform.position = new Vector3(2*num, 0, 0);
+         cube.name = "Voxel" + num;
          cube.GetComponent<MeshFilter>().sharedMesh = VoxelMesh.Build(voxelData.GetData(), voxelData.unitLength, false);
      }
+
      void loadPathVoxels()
      {
          // 确保目录存在
@@ -127,39 +158,71 @@
              // 获取目录下的所有文件路径
              string[] fileEntries = Directory.GetFiles(loadPath);
              // 遍历所有文件
+             int cnt = 0;
              foreach (string filePath in fileEntries)
              {
-                 Debug.Log(filePath);
+                 
+                 if (filePath.Length>=5&&filePath.Substring(filePath.Length - 5, 5) == ".meta") continue;
                  // 读取voxel
-                 loadVoxel(filePath);
+                 loadVoxel(filePath, ++cnt);
              }
          }
          else
+
          {
              Debug.LogError("Directory not found: " + loadPath);
+
+
          }
-         
      }
-     
-     void generateVoxel()
+
+     void generateVoxels_Path()
      {
-         voxelizer=Resources.Load("Shaders/VoxelizeCS") as ComputeShader;
-         selectedMesh = obj.GetComponent<MeshFilter>();
-         // Mesh mesh = selectedMesh.sharedMesh;
-         Mesh mesh = Resources.Load("Meshes/mySphere") as Mesh;
-         VoxelData voxelData = Voxelize(
-             voxelizer, // ComputeShader (Voxelizer.compute)
-             mesh, // a target mesh
-             32, // # of voxels for largest AABB bounds
-             false // flag to fill in volume or not; if set flag to false, sample a surface only
-         );
-         bool useUV = false;
-         string MeshName = "mesh1";
-         VoxelUtils.saveVoxelInfo(MeshName,voxelData);
- // build voxel cubes integrated mesh    
+         string fullPath = "Assets/Resources/" + voxelizePath;
+         // 确保目录存在
+         if (Directory.Exists(fullPath)) {
+             // 获取目录下的所有文件路径
+             string[] fileEntries = Directory.GetFiles(fullPath);
+             // 遍历所有文件
+             int cnt = 0;
+             foreach (string filePath in fileEntries) {
+                 if(filePath.Substring(filePath.Length-5,5)==".meta")continue;
+                 string fileName = Path.GetFileNameWithoutExtension(filePath);
+                 generateVoxel(fileName);
+
+             }
+         }
+         else {
+             Debug.LogError("Directory not found: " + fullPath);
+         }
+     }
+     void generateVoxel(String fileName)
+     {
+         //shader路径
+         voxelizer = Resources.Load("Shaders/VoxelizeCS") as ComputeShader;
+         //只能加载Resource下的资源
+         Mesh mesh = Resources.Load(voxelizePath+"/"+fileName) as Mesh;
+         if (mesh!=null)
+         {
+             VoxelData voxelData = Voxelize(
+                 voxelizer, // ComputeShader (Voxelizer.compute)
+                 mesh, // a target mesh
+                 32, // # of voxels for largest AABB bounds
+                 false // flag to fill in volume or not; if set flag to false, sample a surface only
+             );
+             bool useUV = false;
+             VoxelUtils.saveVoxelInfo(voxelizeSavePath+fileName, voxelData);
+         }
+         else
+         {
+             Debug.Log(voxelizePath+"/"+fileName+" generateVoxel failed");
+         }
+
+
+         // build voxel cubes integrated mesh    
          //selectedMesh.sharedMesh = VoxelMesh.Build(voxelData.GetData(), voxelData.unitLength, useUV);
-        
- // build 3D texture represent a volume by voxels.
+
+         // build 3D texture represent a volume by voxels.
          // RenderTexture volumeTexture = BuildTexture3D(
          //     voxelizer,
          //     data,
@@ -167,8 +230,6 @@
          //     RenderTextureFormat.ARGBFloat,
          //     FilterMode.Bilinear
          // );
- 
-         
      }
      // public static RenderTexture BuildTexture3D(ComputeShader voxelizer, VoxelData data, RenderTextureFormat format, FilterMode filterMode)
      // {
