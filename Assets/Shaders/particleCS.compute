@@ -1,0 +1,26 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+struct ParticleData {
+    float3 pos;
+    float4 color;
+};
+float Time;
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWStructuredBuffer<ParticleData>ParticleBuffers;
+
+[numthreads(10,10,10)]
+void CSMain (uint3 gid:SV_GroupID,uint id : SV_GroupIndex)
+{
+    int index=gid.x*1000+id;
+    float x=sin(index);
+    float y=sin(1.2f*index);
+    float3 forward=float3(x,y,-sqrt(1-x*x-y*y));
+    ParticleBuffers[index].color=float4(forward.x,forward.y,cos(index)*0.5f,1.0);
+    if(Time>gid.x)
+    {
+        ParticleBuffers[index].pos+=forward*0.05f;
+    }
+
+    
+}
