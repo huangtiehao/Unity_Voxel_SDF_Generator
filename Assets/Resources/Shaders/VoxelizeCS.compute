@@ -3,25 +3,15 @@
 #pragma kernel BuildTexture3D
 struct Voxel {
     float3 worldPos;
-    int3 voxelPos;
+    uint fill_VoxelPos;
     float2 uv;
-    int fill;
-    bool front;
 };
 
-bool is_front_voxel(Voxel v)
-{
-    return v.fill && v.front;
-}
 
-bool is_back_voxel(Voxel v)
-{
-    return v.fill && !v.front;
-}
 
 bool is_empty_voxel(Voxel v)
 {
-    return !v.fill;
+    return (v.fill_VoxelPos>>24&1)==1;
 }
 struct AABB
 {
@@ -179,8 +169,7 @@ float3 get_voxel_position(int x, int y, int z) {
 void GetTriangle(
     int idx, 
     out float3 va, out float3 vb, out float3 vc, 
-    out float2 uva, out float2 uvb, out float2 uvc,
-    out bool front
+    out float2 uva, out float2 uvb, out float2 uvc
 )
 {
     int ia = _TriBuffer[idx * 3];
@@ -196,13 +185,11 @@ void GetTriangle(
     uvc = _UVBuffer[ic];
 
     float3 normal = cross((vb - va), (vc - vb));
-    front = dot(normal, float3(0, 0, 1)) < 0;
 }
 
 void Surface(
     float3 va, float3 vb, float3 vc,
-    float2 uva, float2 uvb, float2 uvc,
-    bool front
+    float2 uva, float2 uvb, float2 uvc
 )
 {
     //得到三角形包围盒大小
@@ -237,10 +224,8 @@ void Surface(
                     uint vid = get_voxel_index(x, y, z);
                     Voxel voxel = _VoxelBuffer[vid];
                     voxel.worldPos = get_voxel_position(x, y, z);
-                    voxel.voxelPos = int3(x,y,z);
+                    voxel.fill_VoxelPos =(1<<24)+(x<<16)+(y<<8)+z;
                     voxel.uv = tri_barycentric_uv(voxel.worldPos, va, vb, vc, uva, uvb, uvc);
-                    voxel.front = front;
-                    voxel.fill = 1;
                     _VoxelBuffer[vid] = voxel;
                 }
             }
@@ -256,11 +241,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     float3 va, vb, vc;
     float2 uva, uvb, uvc;
-    bool front;
-    GetTriangle(idx, va, vb, vc, uva, uvb, uvc, front);//得到顶点信息
+
+    GetTriangle(idx, va, vb, vc, uva, uvb, uvc);//得到顶点信息
 
     //if (!front) return;
-    Surface(va, vb, vc, uva, uvb, uvc, front);
+    Surface(va, vb, vc, uva, uvb, uvc);
 }
 
 
@@ -282,5 +267,5 @@ void BuildTexture3D (uint3 id : SV_DispatchThreadID)
 
     uint vid = get_voxel_index(x, y, z);
     Voxel v = _VoxelBuffer[vid];
-    _VoxelTexture[id] = v.fill;
+    _VoxelTexture[id] = v.fill_VoxelPos>>24;
 }

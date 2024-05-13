@@ -148,7 +148,7 @@ public class MeshInfoExporter : EditorWindow
                 for (int k = 0; k < d; ++k)
                 {
                     int index = i*h*d+j*d+k;
-                    if (voxels[index].fill >0)
+                    if (voxels[index].IsFill())
                     {
                         Debug.Log("index:"+index);
                         cnt++;
@@ -160,7 +160,7 @@ public class MeshInfoExporter : EditorWindow
         Debug.Log(cnt);
         selectedMesh = obj.GetComponent<MeshFilter>();
         mesh = selectedMesh.sharedMesh;
-        VoxelData data = new VoxelData(voxels, w, h, d, unit);
+        VoxelData data = new VoxelData(voxels, w, h, d, unit,cnt);
 
         bool useUV = false;
         // build voxel cubes integrated mesh    

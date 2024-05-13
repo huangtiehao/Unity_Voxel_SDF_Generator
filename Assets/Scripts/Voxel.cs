@@ -12,24 +12,12 @@ namespace VoxelSystem
     public struct Voxel
     {
         public Vector3 worldPos;
-        public int3 voxelPos;
+        public uint fill_VoxelPos;//存储了fill，在高位的第八个位置，后面三个字节每个字节分别存储voxelPos的xyz
         public Vector2 uv;
-        public uint fill;
-        public uint front;
 
-        public bool IsFrontFace()
+        public bool IsFill()
         {
-            return fill > 0 && front > 0;
-        }
-
-        public bool IsBackFace()
-        {
-            return fill > 0 && front < 1;
-        }
-
-        public bool IsEmpty()
-        {
-            return fill < 1;
+            return (((fill_VoxelPos >> 24) & 1) == 1);//右移24位将fill移到最低位
         }
     }
 

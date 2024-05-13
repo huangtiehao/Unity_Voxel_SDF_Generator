@@ -117,12 +117,19 @@
          voxelizer.Dispatch(kernelID,triangleIndexes/64+1,1,1);
          
          voxelBuffer.GetData(voxels);
-         
+         int fillVoxels = 0;
+         for (int i = 0; i < voxels.Length; ++i)
+         {
+             if (voxels[i].IsFill())
+             {
+                 voxels[fillVoxels++] = voxels[i];
+             }
+         }
          vertBuffer.Release();
          uvBuffer.Release();
          triBuffer.Release();
          voxelBuffer.Release();
-         return new VoxelData(voxels, w, h, d, unit);
+         return new VoxelData(voxels, w, h, d, unit,fillVoxels);
      }
      void saveThisMesh()
      {
