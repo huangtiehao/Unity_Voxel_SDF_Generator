@@ -14,8 +14,8 @@
  {
      // Start is called before the first frame update
      private ComputeShader voxelizer;
-     public MeshFilter selectedMesh;
-     public GameObject obj;
+     private MeshFilter selectedMesh;
+     private GameObject obj;
      private string voxelizePath="Meshes";//只能voxelize Resources下的目录
      private string savePath="Assets/Resources/VoxelInfo/";
      private string voxelizeSavePath="Assets/Resources/VoxelInfo/";
