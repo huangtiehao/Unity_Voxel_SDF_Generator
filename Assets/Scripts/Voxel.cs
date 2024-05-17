@@ -9,6 +9,7 @@ namespace VoxelSystem
 {
 
     [StructLayout(LayoutKind.Sequential)]
+    [Serializable]
     public struct Voxel
     {
         public Vector3 worldPos;

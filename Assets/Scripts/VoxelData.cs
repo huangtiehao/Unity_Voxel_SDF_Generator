@@ -10,9 +10,10 @@ using UnityEngine.Rendering;
 
 namespace VoxelSystem {
 
-    public class VoxelData {
+    [Serializable]
+    public class VoxelData : ScriptableObject
+    {
         
-
         public int width, height, depth;
         public float unitLength;
         public int arrayLength;

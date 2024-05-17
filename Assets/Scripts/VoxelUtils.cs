@@ -25,39 +25,12 @@ public static class VoxelUtils
         }
 
         return new VoxelData();
-
-        // VoxelData voxelData;
-        // using (StreamReader sr = File.OpenText(path + name))
-        // {
-        //     sr.Serialize()
-        //     String strs = sr.ReadToEnd();
-        //     //处理数据
-        //     StringBuilder curString;
-        //     int w, h, d,unitLength;
-        //     for (int i = 0; i < strs.Length; ++i)
-        //     {
-        //         if (strs[i] == ' ')
-        //         {
-        //             curString
-        //         }
-        //         else
-        //         {
-        //             
-        //         }
-        //     }
-        //     Voxel[] voxels = new Voxel[w * h * d];
-        //     sr.Close();
-        //     sr.Dispose();
-        //     Debug.Log(strs);
-        // }
-        //
-        // return voxelData;
     }
+
     public static void saveVoxelInfo(String fullPath, VoxelData voxelData )
     {
         
 
-        // ...
 
         byte[] data = voxelData.Serialize();
         string directoryPath = Path.GetDirectoryName(fullPath);

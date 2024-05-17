@@ -1,14 +1,9 @@
-﻿// Copyright 2021 Daniel Shervheim
-
-using Unity.VisualScripting.Dependencies.NCalc;
+﻿using Unity.VisualScripting.Dependencies.NCalc;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
-namespace DSS.SDF {
-
-/// @brief A tool to generate signed distance fields from Mesh assets.
-/// TODO: determine if we lose precision or negative values by using Color struct.
-/// Perhaps we should return float[,,] instead?
-public class GenSdf : UnityEngine.Object {
+//A tool to generate signed distance fields from Mesh assets.
+public class SdfGenerator{
   private Mesh mesh = null;
   public Mesh Mesh {
     get {
@@ -32,7 +27,7 @@ public class GenSdf : UnityEngine.Object {
     }
   }
 
-  private float padding = 0f;
+  private float padding = 0.2f;
   public float Padding {
     get {
       return padding;
@@ -45,16 +40,16 @@ public class GenSdf : UnityEngine.Object {
     }
   }
 
-  private int resolution = 32;
-  public int Resolution {
+  private int sdfResolution = 32;
+  public int SdfResolution {
     get {
-      return resolution;
+      return sdfResolution;
     }
     set {
       if (value < 1) {
         throw new System.ArgumentException("Resolution must be >= 1");
       }
-      resolution = value;
+      sdfResolution = value;
     }
   }
 
@@ -62,23 +57,23 @@ public class GenSdf : UnityEngine.Object {
     public Vector3 a, b, c;
   }
 
-  public Texture3D Generate() {
+  public Texture3D generate() {
     if (mesh == null) {
       throw new System.ArgumentException("Mesh must have been assigned");
     }
 
     // Create the voxel texture.
-    Texture3D voxels = new Texture3D(resolution, resolution, resolution, TextureFormat.RGBAHalf, false);
+    Texture3D voxels = new Texture3D(sdfResolution, sdfResolution, sdfResolution, TextureFormat.RFloat, false);
     voxels.anisoLevel = 1;
-    voxels.filterMode = FilterMode.Bilinear;
+    voxels.filterMode = FilterMode.Trilinear;
     voxels.wrapMode = TextureWrapMode.Clamp;
 
     // Get an array of pixels from the voxel texture, create a buffer to
     // hold them, and upload the pixels to the buffer.
-    Color[] pixelArray = voxels.GetPixels(0);
-    ComputeBuffer pixelBuffer = new ComputeBuffer(pixelArray.Length, sizeof(float) * 4);
+    float[] pixelArray = new float[sdfResolution*sdfResolution*sdfResolution];
+    ComputeBuffer pixelBuffer = new ComputeBuffer(pixelArray.Length, sizeof(float));
     pixelBuffer.SetData(pixelArray);
-
+    
     // Get an array of triangles from the mesh.
     Vector3[] meshVertices = mesh.vertices;
     int[] meshTriangles = mesh.GetTriangles(subMeshIndex);
@@ -94,7 +89,8 @@ public class GenSdf : UnityEngine.Object {
     triangleBuffer.SetData(triangleArray);
 
     // Instantiate the compute shader from resources.
-    ComputeShader compute = Instantiate(Resources.Load("Shaders/GenSdf")) as ComputeShader;
+    ComputeShader compute = Resources.Load("Shaders/GenSdf") as ComputeShader;
+    //ComputeShader compute = Resources.Load("Shaders/GenerateSdf") as ComputeShader;
     int kernel = compute.FindKernel("CSMain");
 
     // Upload the pixel buffer to the GPU.
@@ -106,7 +102,7 @@ public class GenSdf : UnityEngine.Object {
     compute.SetInt("triangleBufferSize", triangleArray.Length);
 
     // Calculate and upload the other necessary parameters.
-    compute.SetInt("textureSize", resolution);
+    compute.SetInt("textureSize", sdfResolution);
     Vector3 minExtents = Vector3.zero;
     Vector3 maxExtents = Vector3.zero;
     foreach (Vector3 v in mesh.vertices) {
@@ -118,7 +114,7 @@ public class GenSdf : UnityEngine.Object {
     compute.SetVector("minExtents", minExtents - Vector3.one*padding);
     compute.SetVector("maxExtents", maxExtents + Vector3.one*padding);
     
-    //随机的射线
+    //sample random ray
     Vector3[] sampleDirs = new Vector3[64];
     for (int i = 0; i < 64; ++i)
     {
@@ -134,18 +130,14 @@ public class GenSdf : UnityEngine.Object {
     compute.Dispatch(kernel, pixelArray.Length / 256 + 1, 1, 1);
 
     // Destroy the compute shader and release the triangle buffer.
-    DestroyImmediate(compute);
     triangleBuffer.Release();
 
     // Retrieve the pixel buffer and reapply it to the voxels texture.
     pixelBuffer.GetData(pixelArray);
     pixelBuffer.Release();
-    voxels.SetPixels(pixelArray, 0);
+    voxels.SetPixelData(pixelArray, 0);
     voxels.Apply();
-
     // Return the voxel texture.
     return voxels;
   }
 }
-
-}  // namespace DSS.SDF

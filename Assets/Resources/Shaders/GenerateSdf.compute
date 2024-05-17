@@ -6,12 +6,11 @@ struct Triangle {
 	float3 a, b, c;
 };
 
-RWStructuredBuffer<float> pixelBuffer;
+RWStructuredBuffer<float4> pixelBuffer;
 int pixelBufferSize;
 int textureSize;
 float3 minExtents, maxExtents;
 
-StructuredBuffer<float3>sampleDirs;
 RWStructuredBuffer<Triangle> triangleBuffer;
 int triangleBufferSize;
 
@@ -24,6 +23,7 @@ float3 TriangleNormal(uint triangleId) {
 	float3 ac = triangleBuffer[triangleId].a - triangleBuffer[triangleId].c;
 	return normalize(cross(ba, ac));
 }
+
 
 float3 Remap(float3 v, float3 fromMin, float3 fromMax, float3 toMin, float3 toMax)
 {
@@ -93,17 +93,15 @@ float DistanceToTriangle(float3 position, uint triangleId) {
 
 
 
-/* Returns the nearest triangle distance */
-float NearestTriangleDis(float3 position) {
-	float dis;
-	float minDis=DistanceToTriangle(position, 0);
-	for (uint t = 1; t < (uint)triangleBufferSize; t++) {
-		dis=DistanceToTriangle(position, t);
-		if (dis < minDis) {
-			minDis=dis;
+/* Returns the index of the nearest triangle to the input position. */
+uint NearestTriangleId(float3 position) {
+	uint id = 0;
+	for (uint t = 0; t < (uint)triangleBufferSize; t++) {
+		if (DistanceToTriangle(position, t) < DistanceToTriangle(position, id)) {
+			id = t;
 		}
 	}
-	return minDis;
+	return id;
 }
 
 
@@ -160,18 +158,14 @@ uint RayIntersectsTriangle(float3 o, float3 d, uint triangleId) {
 
 
 
-int getSign(float3 position) {
+uint IntersectionCount(float3 position, float3 direction) {
 	uint count = 0;
-	uint tot=0;
-	for(int i=0;i<64;++i)
-	{
-		for (uint t = 0; t < (uint)triangleBufferSize; t++) {
-			count += RayIntersectsTriangle(position, sampleDirs[i], t);
-			tot++;
-		}
+
+	for (uint t = 0; t < (uint)triangleBufferSize; t++) {
+		count += RayIntersectsTriangle(position, direction, t);
 	}
-	if(count>tot/2)return -1;
-	else return 1;
+
+	return count;
 }
 
 
@@ -192,8 +186,11 @@ void CSMain(uint3 id : SV_DispatchThreadID) {
 
 	float3 pos = PositionFromVoxelId(To3D(id.x));
 
-	float dis= NearestTriangleDis(pos);
-	float sig=getSign(pos);
-	
-	pixelBuffer[id.x] = sig*dis;
+	uint nearestTriangle = NearestTriangleId(pos);
+
+	float distance = DistanceToTriangle(pos, nearestTriangle);
+
+	float s = (IntersectionCount(pos, float3(0, 1, 0)) % 2 == 0) ? 1 : -1;
+
+	pixelBuffer[id.x] = float4(TriangleNormal(nearestTriangle), s*distance);
 }
