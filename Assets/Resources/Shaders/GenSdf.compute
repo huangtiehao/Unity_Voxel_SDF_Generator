@@ -1,5 +1,3 @@
-// Copyright 2021 Daniel Shervheim
-
 #pragma kernel CSMain
 
 struct Triangle {
@@ -68,8 +66,8 @@ float dot2(float3 v) {
 
 
 
-/* Returns the unsigned distance between the input position and triangle.
-Developed by Inigo Quilez. */
+// Returns the unsigned distance between the input position and triangle.
+
 float DistanceToTriangle(float3 position, uint triangleId) {
 	float3 ba = triangleBuffer[triangleId].b - triangleBuffer[triangleId].a;
 	float3 cb = triangleBuffer[triangleId].c - triangleBuffer[triangleId].b;

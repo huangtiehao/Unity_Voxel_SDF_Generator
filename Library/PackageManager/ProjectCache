@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638494529581332244
-    m_Hash: 2769422078
+      ticks: 638513398096396694
+    m_Hash: 2095954475
   m_LockFileStatus:
     m_FilePath: C:/unityProjects/myVoxelization/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638494530006535193
-    m_Hash: 3642192657
+      ticks: 638513398207798636
+    m_Hash: 788877271
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_LocalPackages:
@@ -22,6 +22,59 @@ m_LocalPackages:
 m_ProjectPath: C:/unityProjects/myVoxelization/Packages
 m_EditorVersion: 2022.3.24f1 (334eb2a0b267)
 m_ResolvedPackages:
+- packageId: com.unity.demoteam.mesh-to-sdf@https://github.com/Unity-Technologies/com.unity.demoteam.mesh-to-sdf.git
+  testable: 0
+  isDirectDependency: 1
+  version: 1.1.0
+  source: 5
+  resolvedPath: C:\unityProjects\myVoxelization\Library\PackageCache\com.unity.demoteam.mesh-to-sdf@1f8ee658aa
+  assetPath: Packages/com.unity.demoteam.mesh-to-sdf
+  name: com.unity.demoteam.mesh-to-sdf
+  displayName: Demo Team Mesh to SDF
+  author:
+    name: 
+    email: 
+    url: 
+  category: 
+  type: 
+  description: A real-time SDF generator. Use a Mesh or a dynamically deforming SkinnedMesh
+    as input to generate a 3D SDF texture.
+  status: 0
+  errors: []
+  versions:
+    all: []
+    compatible: []
+    recommended: 
+    deprecated: []
+  dependencies: []
+  resolvedDependencies: []
+  keywords: []
+  registry:
+    id: main
+    name: 
+    url: https://packages.unity.com
+    scopes: []
+    isDefault: 1
+    capabilities: 7
+    configSource: 0
+  hideInEditor: 1
+  isAssetStorePackage: 0
+  datePublishedTicks: 0
+  documentationUrl: 
+  hasRepository: 0
+  repository:
+    type: 
+    url: 
+    revision: 
+    path: 
+  unityLifecycle:
+    version: 
+    nextVersion: 
+    recommendedVersion: 
+    isDeprecated: 0
+    deprecationMessage: 
+  isDeprecated: 0
+  deprecationMessage: 
 - packageId: com.unity.collab-proxy@2.3.1
   testable: 0
   isDirectDependency: 1
@@ -3426,10 +3479,12 @@ m_ResolvedPackages:
     - 1.8.12
     - 1.8.13
     - 1.8.14
+    - 1.8.15
     compatible:
     - 1.8.13
     - 1.8.14
-    recommended: 1.8.14
+    - 1.8.15
+    recommended: 1.8.15
     deprecated: []
   dependencies:
   - name: com.unity.mathematics

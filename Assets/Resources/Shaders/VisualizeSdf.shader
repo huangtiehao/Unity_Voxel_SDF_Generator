@@ -24,7 +24,7 @@
       
       #pragma vertex vert
       #pragma fragment frag
-      // make fog work
+      
       #pragma multi_compile_fog
 
       #pragma target 4.0
@@ -43,7 +43,8 @@
         float4 vertex : SV_POSITION;
         float3 localPos : TEXCOORD0;
       };
-
+      //hit 阈值
+      #define EPS 0.01
       sampler3D _SDF;
       float _Density;
       float3 _MinExtents;
@@ -70,10 +71,8 @@
           
           float3 localViewPos = mul(unity_WorldToObject, float4(_WorldSpaceCameraPos.xyz, 1.0)).xyz;
           float3 localViewDir = normalize(i.localPos - localViewPos);
-          
-          // This is the longest any ray throughout the mesh could be
-          //float maxDist = length(_MaxExtents - _MinExtents) + 0.01;
-          
+
+          //current Location
           float3 position=i.localPos+0*localViewDir ;
           
           [unroll(STEPS)]
@@ -86,8 +85,10 @@
                   return float4(0,0,0,1);
               }
               float sdf=samp.r;
+              //rayMarch
               position+=sdf*localViewDir;
-              if(abs(sdf)<0.01)
+              //小于某个阈值就当作击中
+              if(abs(sdf)<EPS)
               {
                   return float4(1,1,1, 1);
               }

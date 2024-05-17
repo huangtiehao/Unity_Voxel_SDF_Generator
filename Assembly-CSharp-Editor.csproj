@@ -855,6 +855,10 @@
       <Project>{c8a50103-c4b1-4feb-0342-f088eac7ce51}</Project>
       <Name>Unity.ShaderGraph.Editor</Name>
     </ProjectReference>
+    <ProjectReference Include="Unity.DemoTeam.MeshToSDF.csproj">
+      <Project>{be3407c2-51d7-44f2-d07a-41b558605ffe}</Project>
+      <Name>Unity.DemoTeam.MeshToSDF</Name>
+    </ProjectReference>
     <ProjectReference Include="Unity.VisualStudio.Editor.csproj">
       <Project>{812c2d74-6689-9219-3e59-51fa5d8aa086}</Project>
       <Name>Unity.VisualStudio.Editor</Name>
@@ -914,6 +918,10 @@
     <ProjectReference Include="Unity.RenderPipelines.Core.ShaderLibrary.csproj">
       <Project>{068afe36-b75d-4440-83e2-b86ae0b31489}</Project>
       <Name>Unity.RenderPipelines.Core.ShaderLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="Unity.DemoTeam.MeshToSDF.Editor.csproj">
+      <Project>{86080057-3458-ffe3-b96e-3022cbcbefeb}</Project>
+      <Name>Unity.DemoTeam.MeshToSDF.Editor</Name>
     </ProjectReference>
     <ProjectReference Include="Unity.VisualScripting.State.Editor.csproj">
       <Project>{f5f3704c-e652-7d1f-46d8-681972aeeeaa}</Project>

@@ -47,15 +47,15 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\TestCube.cs" />
     <Compile Include="Assets\Scripts\mathUtils.cs" />
-    <Compile Include="Assets\Scripts\VoxelizationToolCS.cs" />
     <Compile Include="Assets\Scripts\VoxelUtils.cs" />
+    <Compile Include="Assets\Scripts\VoxelSdfGenerator.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\Scripts\VoxelData.cs" />
     <Compile Include="Assets\Scripts\VoxelMesh.cs" />
-    <Compile Include="Assets\Scripts\Voxelization.cs" />
+    <Compile Include="Assets\Scripts\SdfGenerator.cs" />
     <Compile Include="Assets\Scripts\MeshSaver.cs" />
-    <Compile Include="Assets\Scripts\particleTest.cs" />
     <Compile Include="Assets\Scripts\Voxel.cs" />
+    <Compile Include="Assets\Scripts\VoxelGenerator.cs" />
     <None Include="Library\PackageCache\com.unity.modules.subsystems@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.render-pipelines.universal@14.0.10\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.jsonserialize@1.0.0\package.json" />
@@ -71,14 +71,15 @@
     <None Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.imgui@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.tilemap@1.0.0\package.json" />
+    <None Include="Assets\Resources\Shaders\GenSdf.compute" />
     <None Include="Library\PackageCache\com.unity.timeline@1.7.6\package.json" />
+    <None Include="Library\PackageCache\com.unity.demoteam.mesh-to-sdf@1f8ee658aa\package.json" />
     <None Include="Library\PackageCache\com.unity.ide.visualstudio@2.0.22\ValidationConfig.json" />
     <None Include="Library\PackageCache\com.unity.modules.terrainphysics@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.mathematics@1.2.6\package.json" />
     <None Include="Library\PackageCache\com.unity.burst@1.8.13\ValidationExceptions.json" />
-    <None Include="Assets\Shaders\visualizeVoxel.shader" />
+    <None Include="Library\PackageCache\com.unity.demoteam.mesh-to-sdf@1f8ee658aa\_External\TressFXSDF.hlsl" />
     <None Include="Library\PackageCache\com.unity.visualscripting@1.9.2\package.json" />
-    <None Include="Assets\Shaders\particleShader.shader" />
     <None Include="Library\PackageCache\com.unity.timeline@1.7.6\ValidationExceptions.json" />
     <None Include="Library\PackageCache\com.unity.collab-proxy@2.3.1\package.json" />
     <None Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\PackageConversionData.json" />
@@ -90,28 +91,26 @@
     <None Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\ValidationExceptions.json" />
     <None Include="Library\PackageCache\com.unity.shadergraph@14.0.10\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.unityanalytics@1.0.0\package.json" />
-    <None Include="Assets\Shaders\texCubeCS.compute" />
     <None Include="Library\PackageCache\com.unity.ide.rider@3.0.28\package.json" />
     <None Include="Library\PackageCache\com.unity.searcher@4.9.2\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.video@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.shadergraph@14.0.10\ValidationConfig.json" />
     <None Include="Library\PackageCache\com.unity.test-framework@1.1.33\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.particlesystem@1.0.0\package.json" />
-    <None Include="Assets\Shaders\VoxelPass.hlsl" />
-    <None Include="Assets\Shaders\VoxelGen.shader" />
+    <None Include="Assets\Resources\Shaders\VoxelPass.hlsl" />
+    <None Include="Assets\Resources\Shaders\VoxelGen.shader" />
     <None Include="Library\PackageCache\com.unity.modules.physics2d@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.vr@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.visualscripting@1.9.2\ValidationExceptions.json" />
     <None Include="Library\PackageCache\com.unity.ide.visualstudio@2.0.22\ValidationExceptions.json" />
     <None Include="Library\PackageCache\com.unity.modules.wind@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.umbra@1.0.0\package.json" />
-    <None Include="Assets\Shaders\visualizeVoxelPass.hlsl" />
-    <None Include="Assets\Resources\Shaders\VoxelizeCS.compute" />
+    <None Include="Assets\Resources\Shaders\GenVoxel.compute" />
+    <None Include="Assets\Resources\Shaders\VisualizeSdf.shader" />
     <None Include="Library\PackageCache\com.unity.modules.audio@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.physics@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.render-pipelines.universal@14.0.10\ValidationExceptions.json" />
     <None Include="Library\PackageCache\com.unity.modules.vehicles@1.0.0\package.json" />
-    <None Include="Assets\Shaders\particleCS.compute" />
     <None Include="Library\PackageCache\com.unity.modules.unitywebrequestwww@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.modules.unitywebrequestaudio@1.0.0\package.json" />
     <None Include="Library\PackageCache\com.unity.textmeshpro@3.0.6\Editor Resources\Shaders\TMP_SDF_SSD.cginc" />
@@ -789,6 +788,10 @@
       <Project>{c8a50103-c4b1-4feb-0342-f088eac7ce51}</Project>
       <Name>Unity.ShaderGraph.Editor</Name>
     </ProjectReference>
+    <ProjectReference Include="Unity.DemoTeam.MeshToSDF.csproj">
+      <Project>{be3407c2-51d7-44f2-d07a-41b558605ffe}</Project>
+      <Name>Unity.DemoTeam.MeshToSDF</Name>
+    </ProjectReference>
     <ProjectReference Include="Unity.VisualStudio.Editor.csproj">
       <Project>{812c2d74-6689-9219-3e59-51fa5d8aa086}</Project>
       <Name>Unity.VisualStudio.Editor</Name>
@@ -848,6 +851,10 @@
     <ProjectReference Include="Unity.RenderPipelines.Core.ShaderLibrary.csproj">
       <Project>{068afe36-b75d-4440-83e2-b86ae0b31489}</Project>
       <Name>Unity.RenderPipelines.Core.ShaderLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="Unity.DemoTeam.MeshToSDF.Editor.csproj">
+      <Project>{86080057-3458-ffe3-b96e-3022cbcbefeb}</Project>
+      <Name>Unity.DemoTeam.MeshToSDF.Editor</Name>
     </ProjectReference>
     <ProjectReference Include="Unity.VisualScripting.State.Editor.csproj">
       <Project>{f5f3704c-e652-7d1f-46d8-681972aeeeaa}</Project>
