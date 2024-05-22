@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using UnityEditor;
 using UnityEngine;
 using VoxelSystem;
 
@@ -21,7 +22,7 @@ namespace hth
         
         public VoxelData generate()
         {
-             ComputeShader computeShader = Resources.Load("Shaders/GenVoxel") as ComputeShader;
+             ComputeShader computeShader = AssetDatabase.LoadAssetAtPath<ComputeShader>("Packages/com.funplus.xrender/Shaders/VoxelSdfGen/GenVoxel.compute");
              mesh.RecalculateBounds();
              Bounds bounds = mesh.bounds;
              //顶点数据

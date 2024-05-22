@@ -6,7 +6,6 @@
  using System.Runtime.InteropServices;
  using DefaultNamespace;
  using hth;
- using Unity.VisualScripting;
  using UnityEditor;
  using UnityEngine;
  using UnityEngine.Rendering;
@@ -23,12 +22,12 @@
      public Mesh mesh;
      private int resolution = 32;
      private float sdfPadding = 0;
-     private string processPath="Meshes";//只能voxelize Resources下的目录
-     private string savePath="Assets/Resources/VoxelInfo/";
-     private string loadPath="Assets/Resources/VoxelInfo/";
+     private string processPath="Assets/Res/VoxelSdfData/voxelProcess/";
+     private string savePath="Assets/Res/VoxelSdfData/voxelSave/";
+     private string loadPath="Assets/Res/VoxelSdfData/VoxelSave/";
      private Texture2D texture;
  
-     [MenuItem("Tools/Voxelizer")]
+     [MenuItem("Tools/VoxelSdfGenerator")]
      public static void ShowWindow()
      {
          EditorWindow.GetWindow(typeof(VoxelizationTool));
@@ -48,9 +47,19 @@
              sdfPadding = EditorGUILayout.FloatField("sdf padding", sdfPadding);
              sdfGenerator.Padding = sdfPadding;
          }
-
+        
          processPath = EditorGUILayout.TextField("process Path", processPath);
+         if (GUILayout.Button("select process Path"))
+         {
+             processPath = EditorUtility.OpenFolderPanel("select folder", "", "");
+             processPath = "Assets" + processPath.Substring(Application.dataPath.Length);;
+         }
          savePath = EditorGUILayout.TextField("Save Path", savePath);
+         if (GUILayout.Button("select save Path"))
+         {
+             savePath = EditorUtility.OpenFolderPanel("select folder", "", "");
+             savePath = "Assets" + savePath.Substring(Application.dataPath.Length);;
+         }
 
          voxelGenerator.Mesh = mesh;
          voxelGenerator.VoxelResolution = resolution;
@@ -58,8 +67,7 @@
          sdfGenerator.SdfResolution = resolution;
          if (GUILayout.Button("save"))
          {
-             if (selectedIndex == 0 || selectedIndex == 2) generateVoxels_Path();
-             if (selectedIndex == 1 || selectedIndex == 2) generateSdf_Path();
+             generateVoxelSdf_Path();
          }
 
 
@@ -136,10 +144,12 @@
              int cnt = 0;
              foreach (string filePath in fileEntries)
              {
-                 
-                 if (filePath.Length>=5&&filePath.Substring(filePath.Length - 5, 5) == ".meta") continue;
-                 // 读取voxel
-                 loadVoxel(filePath, ++cnt);
+
+                 if (filePath.Length >= 5 && filePath.Substring(filePath.Length - 6, 6) == ".voxel")
+                 {
+                     // 读取voxel
+                     loadVoxel(filePath, ++cnt);
+                 }
              }
          }
          else
@@ -152,9 +162,9 @@
 
 
 
-     void generateSdf_Path()
+     void generateVoxelSdf_Path()
      {
-         string fullPath = "Assets/Resources/" + processPath;
+         string fullPath = processPath;
          // 确保目录存在
          if (Directory.Exists(fullPath)) {
              // 获取目录下的所有文件路径
@@ -163,32 +173,12 @@
              int cnt = 0;
              foreach (string filePath in fileEntries) {
                  if(filePath.Substring(filePath.Length-5,5)==".meta")continue;
-                 string fileName = Path.GetFileNameWithoutExtension(filePath);
-                 sdfGenerator.Mesh = Resources.Load<Mesh>(processPath + "/" + fileName);
-                 generateSdf(fileName);
-
-             }
-         }
-         else {
-             Debug.LogError("Directory not found: " + fullPath);
-         }
-     }
-     void generateVoxels_Path()
-     {
-         string fullPath = "Assets/Resources/" + processPath;
-         // 确保目录存在
-         if (Directory.Exists(fullPath)) {
-             // 获取目录下的所有文件路径
-             string[] fileEntries = Directory.GetFiles(fullPath);
-             // 遍历所有文件
-             int cnt = 0;
-             foreach (string filePath in fileEntries) {
-
-                 if(filePath.Substring(filePath.Length-5,5)==".meta")continue;
-                 string fileName = Path.GetFileNameWithoutExtension(filePath);
-                 mesh = Resources.Load<Mesh>(processPath + "/" + fileName);
-                 generateVoxel(fileName);
-
+                 string fileName = Path.GetFileName(filePath);
+                 string filenameWithoutExt=Path.GetFileNameWithoutExtension(filePath);
+                 mesh = AssetDatabase.LoadAssetAtPath<Mesh>(fullPath + "/" + fileName);
+                 if(selectedIndex==0||selectedIndex==2)generateVoxel(filenameWithoutExt);
+                 if(selectedIndex==1||selectedIndex==2)generateSdf(filenameWithoutExt);
+                 
              }
          }
          else {
@@ -200,15 +190,17 @@
          
          if (mesh != null)
          {
+             sdfGenerator.Mesh = mesh;
              Texture3D sdfData = sdfGenerator.generate();
              // Prompt the user to save the file.
              AssetDatabase.CreateAsset(sdfData,savePath+fileName+".asset");
              AssetDatabase.SaveAssets();
              AssetDatabase.Refresh();
+             Debug.Log("generate "+savePath+"/"+fileName+" sdf success");
          }
          else
          {
-             Debug.Log(processPath + "/" + fileName + " generateVoxel failed");
+             Debug.Log(processPath + "/" + fileName + " generateSdf failed");
          }
      }
      void generateVoxel(String fileName)
@@ -218,7 +210,7 @@
          {
              voxelGenerator.Mesh = mesh;
              VoxelData voxelData = voxelGenerator.generate();
-             VoxelUtils.saveVoxelInfo(savePath+fileName, voxelData);
+             VoxelUtils.saveVoxelInfo(savePath+fileName+".voxel", voxelData);
          }
          else
          {

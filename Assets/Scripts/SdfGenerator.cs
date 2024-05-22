@@ -1,5 +1,4 @@
-﻿using Unity.VisualScripting.Dependencies.NCalc;
-using UnityEditor.ShaderGraph.Internal;
+﻿using UnityEditor;
 using UnityEngine;
 
 //A tool to generate signed distance fields from Mesh assets.
@@ -89,7 +88,8 @@ public class SdfGenerator{
     triangleBuffer.SetData(triangleArray);
 
     // Instantiate the compute shader from resources.
-    ComputeShader compute = Resources.Load("Shaders/GenSdf") as ComputeShader;
+    ComputeShader compute = AssetDatabase.LoadAssetAtPath<ComputeShader>("Packages/com.funplus.xrender/Shaders/VoxelSdfGen/GenSdf.compute");
+    //ComputeShader compute = Resources.Load("Shaders/GenSdf") as ComputeShader;
     //ComputeShader compute = Resources.Load("Shaders/GenerateSdf") as ComputeShader;
     int kernel = compute.FindKernel("CSMain");
 
