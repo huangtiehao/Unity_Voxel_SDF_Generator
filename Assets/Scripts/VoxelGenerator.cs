@@ -9,7 +9,7 @@ namespace hth
     public class VoxelGenerator
     {
         private int voxelResolution;
-        
+        public int full;
         public int VoxelResolution {
             get { return voxelResolution; }
             set { voxelResolution = value; }
@@ -19,7 +19,6 @@ namespace hth
             get { return mesh; }
             set { mesh = value; }
         }
-        
         public VoxelData generate()
         {
              ComputeShader computeShader = AssetDatabase.LoadAssetAtPath<ComputeShader>("Packages/com.funplus.xrender/Shaders/VoxelSdfGen/GenVoxel.compute");
@@ -52,15 +51,37 @@ namespace hth
              var start = bounds.min - new Vector3(hunit, hunit, hunit);
              var end = bounds.max + new Vector3(hunit, hunit, hunit);
              var size = end - start;
-                
+             
              int w, h, d;
              w = Mathf.CeilToInt (size.x / unit);
              h = Mathf.CeilToInt (size.y / unit);
              d = Mathf.CeilToInt (size.z / unit);
-             Debug.Log(w+" "+h+" "+d);
+             Debug.Log("体素大小:"+w+" "+h+" "+d);
              var voxelBuffer = new ComputeBuffer(w * h * d, Marshal.SizeOf(typeof(Voxel)));
              var voxels = new Voxel[voxelBuffer.count];
-             Debug.Log(w+" "+h+" "+d);
+             if (full == 1)
+             {             
+                 for (uint i = 0; i < w; ++i)
+                 {
+                     for (uint j = 0; j < h; ++j)
+                     {
+                         for (uint k = 0; k < d; ++k)
+                         {
+                             uint index = (uint)(i * h * d + j * d + k);
+                             voxels[index].worldPos.x = start.x + unit*i + hunit;
+                             voxels[index].worldPos.y = start.y + unit*j + hunit;
+                             voxels[index].worldPos.z = start.z + unit*k + hunit;
+                             voxels[index].fill_VoxelPos = (1 << 24) + (i << 16) + (j << 8) + k;
+                         }
+                     }
+                 }
+                 vertBuffer.Release();
+                 uvBuffer.Release();
+                 triBuffer.Release();
+                 voxelBuffer.Release();
+                 return new VoxelData(voxels, w, h, d, unit,w*h*d);
+             }
+             
              voxelBuffer.SetData(voxels); // initialize voxels explicitly
              
              computeShader.SetVector("_Start",start);
@@ -94,7 +115,7 @@ namespace hth
                      voxels[fillVoxels++] = voxels[i];
                  }
              }
-             Debug.Log(fillVoxels);
+             Debug.Log("非空体素数量: "+fillVoxels);
              vertBuffer.Release();
              uvBuffer.Release();
              triBuffer.Release();

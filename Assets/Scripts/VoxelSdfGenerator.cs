@@ -21,6 +21,7 @@
      // Start is called before the first frame update
      public Mesh mesh;
      private int resolution = 32;
+     private int full = 0;//是否填满
      private float sdfPadding = 0;
      private string processPath="Assets/Res/VoxelSdfData/voxelProcess/";
      private string savePath="Assets/Res/VoxelSdfData/voxelSave/";
@@ -42,12 +43,14 @@
          GUILayout.Label("Generator", EditorStyles.boldLabel);
          mesh = EditorGUILayout.ObjectField("Mesh", mesh, typeof(Mesh), false) as Mesh;
          resolution = EditorGUILayout.IntField("resolution", resolution);
+         full = EditorGUILayout.IntField("是否填满", full);
+         voxelGenerator.full = full;
          if (selectedIndex != 0)
          {
              sdfPadding = EditorGUILayout.FloatField("sdf padding", sdfPadding);
              sdfGenerator.Padding = sdfPadding;
          }
-        
+         
          processPath = EditorGUILayout.TextField("process Path", processPath);
          if (GUILayout.Button("select process Path"))
          {
@@ -59,8 +62,8 @@
          {
              savePath = EditorUtility.OpenFolderPanel("select folder", "", "");
              savePath = "Assets" + savePath.Substring(Application.dataPath.Length);;
-         }
-
+         } 
+         
          voxelGenerator.Mesh = mesh;
          voxelGenerator.VoxelResolution = resolution;
          sdfGenerator.Mesh = mesh;
@@ -70,10 +73,16 @@
              generateVoxelSdf_Path();
          }
 
-
+            
          if (selectedIndex == 0 || selectedIndex == 2)
          {
+             
              loadPath = EditorGUILayout.TextField("Load Path", loadPath);
+             if (GUILayout.Button("select load Path"))
+             {
+                 loadPath = EditorUtility.OpenFolderPanel("select folder", "", "");
+                 loadPath = "Assets" + loadPath.Substring(Application.dataPath.Length);;
+             }
              if (GUILayout.Button("Load"))
              {
                  loadVoxels_Path();
@@ -98,13 +107,14 @@
      {
          voxelGenerator.Mesh = mesh;
          // Prompt the user to save the file.
-         string path = EditorUtility.SaveFilePanelInProject("Save As", mesh.name + "_Voxel","", "");
+         string path = EditorUtility.SaveFilePanelInProject("Save As", mesh.name + "_voxel","", "");
          
          VoxelData voxelData = voxelGenerator.generate();
          VoxelUtils.saveVoxelInfo(path, voxelData);
          //VoxelUtils.saveVoxelInfo(savePath+mesh.name,voxelData);
          
      }
+     
      
      void saveThisMeshSdf()
      {
@@ -145,7 +155,7 @@
              foreach (string filePath in fileEntries)
              {
 
-                 if (filePath.Length >= 5 && filePath.Substring(filePath.Length - 6, 6) == ".voxel")
+                 if (filePath.Length >= 5 && filePath.Substring(filePath.Length - 6, 6) == "_voxel")
                  {
                      // 读取voxel
                      loadVoxel(filePath, ++cnt);
@@ -210,7 +220,7 @@
          {
              voxelGenerator.Mesh = mesh;
              VoxelData voxelData = voxelGenerator.generate();
-             VoxelUtils.saveVoxelInfo(savePath+fileName+".voxel", voxelData);
+             VoxelUtils.saveVoxelInfo(savePath + fileName + "_voxel", voxelData);
          }
          else
          {
