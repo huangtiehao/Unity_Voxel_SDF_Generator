@@ -52,7 +52,7 @@ voxel相关数据结构在Voxel.cs与VoxelData.cs里
 
 读取voxel文件并将每个体素用一个6个平面的正方体mesh进行表示并重建。
 
-![image-20240611114308173](images\image-20240611114308173.png)
+![image-20240611114308173](images/image-20240611114308173.png)
 
 ## sdf
 
@@ -74,4 +74,4 @@ GenSdf.compute里会为每一个体素分配一个线程，每个体素会发射
 
 可视化相关代码在VisualizeSdf.shader，需要新建一个material并绑上这个shader，他会把texture3D放到一个cube里，然后把camera及对应的cube转到object space再进行ray marching，步长采用sdf值，迭代64次或sdf绝对值小于阈值时停止。
 
-![image-20240611121736983](images\image-20240611121736983.png)
+![image-20240611121736983](images/image-20240611121736983.png)
